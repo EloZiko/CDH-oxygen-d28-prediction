@@ -1,0 +1,25 @@
+[project]
+name = "cdh-oxygen-d28-prediction"
+version = "1.0.0"
+description = "Prenatal prediction of oxygen dependency at day 28 in isolated left-sided CDH"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+# Same versions as in the article; uv.lock pins every other library.
+dependencies = [
+    "catboost==1.2.10",
+    "numpy==2.5.4",
+    "pandas==3.0.5",
+    "scikit-learn==1.9.0",
+]
+
+# Only needed to run the tests; `uv sync` installs them too.
+[dependency-groups]
+dev = [
+    "mini-racer==0.14.1",
+    "pytest==9.2.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]  # lets the tests import cdh_model.py
+testpaths = ["tests"]

@@ -1,0 +1,8 @@
+# Patient data must never be committed (see data/README.md)
+data/*
+!data/README.md
+
+__pycache__/
+.pytest_cache/
+.venv/
+.DS_Store

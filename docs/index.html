@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDH Oxygen Day 28</title>
+  <meta name="description" content="Research tool: prenatal prediction of oxygen dependency at day 28 in fetuses with isolated left-sided congenital diaphragmatic hernia.">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --text: #1b1f24;
+      --muted: #59636e;
+      --border: #d8dde3;
+      --accent: #1d5c8a;
+      --accent-text: #ffffff;
+      --focus: #3b82c4;
+      --notice-bg: #fff8e6;
+      --notice-border: #e3c35c;
+      --error: #a8322a;
+      --high: #a8322a;
+      --high-bg: #fcebea;
+      --low: #23704f;
+      --low-bg: #e7f4ee;
+      --raises: #d0574f;
+      --lowers: #3d86bd;
+      --track: #eceff2;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121518;
+        --surface: #1b2025;
+        --text: #e7eaee;
+        --muted: #9aa5b1;
+        --border: #2e353d;
+        --accent: #5aa3d9;
+        --accent-text: #0d1114;
+        --focus: #7cb9e8;
+        --notice-bg: #2a2416;
+        --notice-border: #6b5a26;
+        --error: #f08a80;
+        --high: #f08a80;
+        --high-bg: #3a1f1d;
+        --low: #6fd0a3;
+        --low-bg: #16302a;
+        --raises: #e57a72;
+        --lowers: #6aaee0;
+        --track: #2a3037;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 40px 16px 56px; }
+    h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.01em; }
+    h2 { font-size: 1.1rem; margin: 0 0 4px; }
+    a { color: var(--accent); }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .lead { margin: 0 0 24px; color: var(--muted); font-size: 1.1rem; }
+
+    .notice {
+      margin-bottom: 24px;
+      padding: 14px 18px;
+      background: var(--notice-bg);
+      border: 1px solid var(--notice-border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+    .notice p { margin: 0 0 6px; }
+    .notice ul { margin: 0; padding-left: 20px; }
+
+    .card {
+      margin-bottom: 24px;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .hint, .help, .note { color: var(--muted); font-size: 0.9rem; }
+    .hint { margin: 0 0 20px; }
+    .help { margin: 4px 0 0; }
+    .note { margin: 8px 0 20px; }
+
+    .fields { display: grid; gap: 20px; }
+    @media (min-width: 640px) { .fields { grid-template-columns: 1fr 1fr; } }
+    .field { margin: 0; padding: 0; border: 0; min-width: 0; }
+    .field > label, .field > legend { display: block; margin-bottom: 6px; padding: 0; font-weight: 600; }
+    .input-unit { display: flex; align-items: center; gap: 8px; }
+    .input-unit span { color: var(--muted); min-width: 2em; }
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .choices { display: grid; gap: 6px; }
+    .choices label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .choices input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
+    button {
+      padding: 10px 22px;
+      font: inherit;
+      font-weight: 600;
+      color: var(--accent-text);
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button.secondary { color: var(--accent); background: transparent; }
+    .error { margin: 0; color: var(--error); font-weight: 600; }
+
+    .verdict {
+      margin: 0;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .verdict.high { color: var(--high); background: var(--high-bg); }
+    .verdict.low { color: var(--low); background: var(--low-bg); }
+
+    .contributions { margin: 0; padding: 0; list-style: none; }
+    .contributions li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px 16px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+    }
+    @media (min-width: 640px) {
+      .contributions li { grid-template-columns: 300px minmax(0, 1fr) 130px; }
+    }
+    .contribution-name { font-weight: 600; }
+    .contribution-value { color: var(--muted); font-weight: 400; }
+    .track { position: relative; height: 12px; background: var(--track); border-radius: 6px; }
+    .track::before {
+      content: "";
+      position: absolute;
+      top: -3px;
+      bottom: -3px;
+      left: 50%;
+      border-left: 2px solid var(--muted);
+    }
+    .bar { position: absolute; top: 0; bottom: 0; }
+    .bar.raises { left: 50%; background: var(--raises); border-radius: 0 6px 6px 0; }
+    .bar.lowers { right: 50%; background: var(--lowers); border-radius: 6px 0 0 6px; }
+    .effect { font-size: 0.9rem; }
+    .effect.raises { color: var(--raises); }
+    .effect.lowers { color: var(--lowers); }
+    .effect.none { color: var(--muted); }
+
+    .about dl { display: grid; gap: 2px 16px; margin: 12px 0 0; }
+    @media (min-width: 640px) { .about dl { grid-template-columns: 170px minmax(0, 1fr); } }
+    .about dt { font-weight: 600; }
+    .about dd { margin: 0 0 8px; }
+    .about .citation { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+    footer { color: var(--muted); font-size: 0.9rem; text-align: center; }
+    footer p { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Research tool · Congenital diaphragmatic hernia</p>
+      <h1>Oxygen dependency at day 28</h1>
+      <p class="lead">Prenatal prediction for isolated left-sided CDH, from four routine markers.</p>
+    </header>
+
+    <aside class="notice" aria-label="Intended use">
+      <p><strong>Research use only. This is not a medical device.</strong> The model must not replace clinical judgement.</p>
+      <ul>
+        <li>For singleton pregnancies with isolated left-sided CDH, diagnosed before birth.</li>
+        <li>The prediction assumes survival to day 28. It is not a risk of death.</li>
+        <li>It reflects current management, including FETO when indicated. Do not use it to decide on FETO.</li>
+      </ul>
+    </aside>
+
+    <noscript><p class="card">This tool needs JavaScript to compute the prediction.</p></noscript>
+
+    <form id="patient-form" class="card">
+      <h2>Prenatal markers</h2>
+      <p class="hint">Leave a marker empty if it was not measured. At least two of the four are needed.</p>
+
+      <div class="fields">
+        <div class="field">
+          <label for="oe_lhr">o/e LHR</label>
+          <div class="input-unit">
+            <input id="oe_lhr" name="oe_lhr" type="number" inputmode="decimal" min="0" max="200" step="any">
+            <span>%</span>
+          </div>
+          <p class="help">Observed-to-expected lung-to-head ratio (ultrasound).</p>
+        </div>
+
+        <fieldset class="field">
+          <legend>Liver herniation</legend>
+          <div class="choices">
+            <label><input type="radio" name="liver_herniation" value="1"> Yes, intrathoracic</label>
+            <label><input type="radio" name="liver_herniation" value="0"> No, intra-abdominal</label>
+            <label><input type="radio" name="liver_herniation" value="" checked> Not assessed</label>
+          </div>
+          <p class="help">Liver herniated into the thorax (ultrasound).</p>
+        </fieldset>
+
+        <div class="field">
+          <label for="dvp">Deepest amniotic fluid pocket</label>
+          <div class="input-unit">
+            <input id="dvp" name="dvp" type="number" inputmode="decimal" min="0" max="400" step="any">
+            <span>mm</span>
+          </div>
+          <p class="help">Deepest vertical pocket of amniotic fluid (ultrasound).</p>
+        </div>
+
+        <div class="field">
+          <label for="oe_tflv">o/e TFLV</label>
+          <div class="input-unit">
+            <input id="oe_tflv" name="oe_tflv" type="number" inputmode="decimal" min="0" max="200" step="any">
+            <span>%</span>
+          </div>
+          <p class="help">Observed-to-expected total fetal lung volume (MRI).</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Classify</button>
+        <button type="reset" class="secondary">Clear</button>
+        <p id="form-error" class="error" role="alert" hidden></p>
+      </div>
+    </form>
+
+    <section id="result" class="card" aria-live="polite" hidden>
+      <p id="verdict" class="verdict"></p>
+      <p class="note">The model gives a class, not a probability: its probabilities are not calibrated (article, Appendix G).</p>
+      <h2>What drives this result</h2>
+      <p class="note">Each bar shows how much a marker pushes towards high risk (right) or low risk (left).<br>
+        SHAP values, compared with an average fetus. A missing marker can count too.</p>
+      <ul id="contributions" class="contributions"></ul>
+    </section>
+
+    <section class="card about">
+      <h2>About the model</h2>
+      <dl>
+        <dt>Algorithm</dt>
+        <dd>CatBoost (gradient-boosted trees), 30 trees of depth 2</dd>
+        <dt>Development</dt>
+        <dd>50 fetuses, Paris-Saclay (France), 2012–2025: AUC 0.878 (± 0.076)</dd>
+        <dt>External validation</dt>
+        <dd>98 fetuses, Leuven (Belgium): AUC 0.827 (95% CI 0.734–0.908)</dd>
+      </dl>
+      <p class="note">Internal AUC from nested cross-validation (mean ± SD).</p>
+      <p class="citation">Vilars P†, El Ouahidi Z†, Russo F, Gay-Cortijo T, El Mazlouzi S, Letourneau A, Saada J, Dumery G, Vivanti A, Mahiou E, Benachi A, Leyne E. Prenatal prediction of oxygen dependency at day 28 in isolated left-sided congenital diaphragmatic hernia: development and external validation of a machine-learning model. 2026. († equal contribution)</p>
+    </section>
+
+    <footer>
+      <p>The prediction is computed in your browser: the values you enter are never sent anywhere.</p>
+      <p><a href="https://github.com/EloZiko/CDH-oxygen-d28-prediction">Source code</a></p>
+    </footer>
+  </main>
+
+  <script src="model.js"></script>
+  <script src="predict.js"></script>
+  <script>
+    const form = document.getElementById("patient-form");
+    const formError = document.getElementById("form-error");
+    const result = document.getElementById("result");
+    const verdict = document.getElementById("verdict");
+    const contributions = document.getElementById("contributions");
+
+    const DISPLAY = {
+      oe_lhr: { label: "o/e LHR", unit: "%" },
+      liver_herniation: { label: "Liver herniation" },
+      dvp: { label: "Deepest amniotic fluid pocket", unit: "mm" },
+      oe_tflv: { label: "o/e TFLV", unit: "%" },
+    };
+
+    // One number per predictor, in the order of the model; NaN when missing.
+    function readPatient() {
+      return MODEL.predictors.map((name) => {
+        const text = form.elements[name].value; // "" when the marker is empty
+        return text === "" ? NaN : Number(text);
+      });
+    }
+
+    function describe(name, value) {
+      if (Number.isNaN(value)) return "not available";
+      if (name === "liver_herniation") return value === 1 ? "yes" : "no";
+      return `${value} ${DISPLAY[name].unit}`;
+    }
+
+    function contributionItem(name, value, shap, largest) {
+      const direction = Math.abs(shap) < 1e-9 ? "none" : shap > 0 ? "raises" : "lowers";
+      const item = document.createElement("li");
+
+      const label = document.createElement("div");
+      const nameText = document.createElement("span");
+      nameText.className = "contribution-name";
+      nameText.textContent = DISPLAY[name].label;
+      const valueText = document.createElement("span");
+      valueText.className = "contribution-value";
+      valueText.textContent = ` · ${describe(name, value)}`;
+      label.append(nameText, valueText);
+
+      const track = document.createElement("div");
+      track.className = "track";
+      track.setAttribute("aria-hidden", "true");
+      if (direction !== "none") {
+        const bar = document.createElement("div");
+        bar.className = `bar ${direction}`;
+        bar.style.width = `${(50 * Math.abs(shap)) / largest}%`;
+        track.append(bar);
+      }
+
+      const effect = document.createElement("div");
+      effect.className = `effect ${direction}`;
+      effect.textContent = { raises: "raises the risk", lowers: "lowers the risk", none: "no effect" }[direction];
+
+      item.append(label, track, effect);
+      return item;
+    }
+
+    function showResult(patient) {
+      const high = isHighRisk(MODEL, patient);
+      verdict.className = `verdict ${high ? "high" : "low"}`;
+      verdict.textContent = `${high ? "High" : "Low"} risk of oxygen dependency at day 28`;
+
+      const shap = shapValues(MODEL, patient);
+      const largest = Math.max(...shap.map(Math.abs));
+      const rows = MODEL.predictors.map((name, f) => ({ name, value: patient[f], shap: shap[f] }));
+      rows.sort((a, b) => Math.abs(b.shap) - Math.abs(a.shap));
+      contributions.replaceChildren(
+        ...rows.map((row) => contributionItem(row.name, row.value, row.shap, largest)));
+
+      result.hidden = false;
+      result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const patient = readPatient();
+      const known = patient.filter((value) => !Number.isNaN(value)).length;
+      formError.hidden = known >= 2;
+      if (known < 2) {
+        formError.textContent = "Enter at least two of the four markers.";
+        result.hidden = true;
+        return;
+      }
+      showResult(patient);
+    });
+
+    form.addEventListener("reset", () => {
+      formError.hidden = true;
+      result.hidden = true;
+    });
+  </script>
+</body>
+</html>
