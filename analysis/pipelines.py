@@ -34,7 +34,9 @@ CANDIDATES = [
     "other_malformations", "cardiac_anomaly", "genetic_anomaly", "cgh_exome_anomaly",
     "mri_performed", "oe_tflv",
 ]
-# Variables with a few possible values: SMOTE copies them instead of averaging them.
+# Variables with a few possible values (yes/no, categories). When SMOTE creates an
+# artificial patient, it gives them the most common value among similar patients,
+# since an in-between value (0.4 of a liver herniation) would make no sense.
 CATEGORICAL = [
     "parity", "ivf", "fetal_sex", "liver_herniation", "placental_localisation",
     "other_malformations", "cardiac_anomaly", "genetic_anomaly", "cgh_exome_anomaly",
