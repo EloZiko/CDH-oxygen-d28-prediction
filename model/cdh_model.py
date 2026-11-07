@@ -1,8 +1,8 @@
 """Prenatal prediction of oxygen dependency at day 28 in isolated left-sided CDH.
 
 Final model of the article: CatBoost on four prenatal predictors, with missing
-values left to the model (no imputation). Used by train.py, validate.py and
-the tests.
+values left to the model (no imputation). Used by train.py, validate.py, the
+tests and the scripts of analysis/.
 """
 import json
 import tempfile
@@ -11,8 +11,9 @@ from pathlib import Path
 import pandas as pd
 from catboost import CatBoostClassifier, Pool
 
-ROOT = Path(__file__).parent
-MODEL_PATH = ROOT / "models" / "catboost_o2_d28.cbm"
+FOLDER = Path(__file__).parent  # model/
+ROOT = FOLDER.parent  # the repository
+MODEL_PATH = FOLDER / "catboost_o2_d28.cbm"
 WEB_MODEL_PATH = ROOT / "docs" / "model.js"
 
 # The four predictors, in the order the model expects them (see data/README.md).

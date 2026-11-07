@@ -17,7 +17,7 @@ import cdh_model
 @pytest.fixture(scope="module")
 def model():
     if not cdh_model.MODEL_PATH.exists():
-        pytest.skip("no trained model: run train.py first")
+        pytest.skip("no trained model: run model/train.py first")
     return cdh_model.load_model()
 
 

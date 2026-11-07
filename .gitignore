@@ -2,6 +2,12 @@
 data/*
 !data/README.md
 
+# Outputs of analysis/: they contain patient-level predictions
+results/
+
+# TabPFN licence key (see analysis/README.md)
+.env
+
 __pycache__/
 .pytest_cache/
 .venv/

@@ -1,8 +1,8 @@
 """Measure the performance of the trained model on a cohort (external validation).
 
 Usage:
-    python validate.py data/validation_cohort.csv
-    python validate.py data/validation_cohort.csv --min-predictors 4
+    uv run model/validate.py data/validation_cohort.csv
+    uv run model/validate.py data/validation_cohort.csv --min-predictors 4
 """
 import argparse
 

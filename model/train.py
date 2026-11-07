@@ -1,9 +1,9 @@
 """Train the final model on the development cohort.
 
 Usage:
-    python train.py data/development_cohort.csv
+    uv run model/train.py data/development_cohort.csv
 
-Saves the model for Python (models/catboost_o2_d28.cbm) and for the web tool
+Saves the model for Python (model/catboost_o2_d28.cbm) and for the web tool
 (docs/model.js).
 """
 import argparse
