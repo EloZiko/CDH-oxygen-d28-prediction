@@ -3,8 +3,8 @@
     uv run analysis/5_tables_figures.py data/development_cohort.csv data/validation_cohort.csv
 
 Writes the article Tables 2, S1-S4, S7 and S8 in results/tables/ and
-Figures 2 and S5 in results/figures/. Results that have not been computed yet
-are left empty.
+Figures 2, 3, S2 and S5 in results/figures/. Results that have not been
+computed yet are left empty.
 """
 import argparse
 import warnings
@@ -16,6 +16,7 @@ matplotlib.use("Agg")  # write image files, no window
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import statsmodels.api as sm
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score, roc_curve
 from statsmodels.nonparametric.smoothers_lowess import lowess
@@ -43,6 +44,12 @@ DRAW_ORDER = {
 }
 NOT_REPORTED = {"CatBoost_RFE": 6}
 GRID = np.linspace(0, 1, 101)  # predicted probabilities at which calibration curves are drawn
+
+# Bar charts of the AUC (Figures 3 and S2): one colour per imputation method
+# (the "deep" palette of seaborn, as in the article), bar width, space between
+# two classifiers and between the internal and external halves of Figure 3.
+IMPUTER_COLORS = dict(zip(IMPUTERS, sns.color_palette("deep", len(IMPUTERS))))
+BAR_WIDTH, MODEL_GAP, BLOCK_GAP = 0.6, 0.9, 2.5
 
 
 def external_folder(min_predictors):
@@ -289,6 +296,72 @@ def figure_roc(predictions, path):
     plt.close(fig)
 
 
+def bar_positions(models, start=0.0):
+    """Place one bar per row: side by side within a classifier, with a gap between classifiers.
+    Returns the bar positions, and one tick (with its name) at the centre of each classifier."""
+    positions, x = [], start
+    for k, model in enumerate(models):
+        if k and model != models[k - 1]:
+            x += MODEL_GAP
+        positions.append(x)
+        x += BAR_WIDTH
+    positions, names = np.array(positions), list(dict.fromkeys(models))
+    ticks = [positions[np.array(models) == name].mean() for name in names]
+    return positions, ticks, names
+
+
+def auc_bars(ax, positions, rows, where, color):
+    """Draw the AUC of each row: internal mean with its SD (black bars), or external value with its 95% CI (red)."""
+    if where == "internal":
+        values, errors, error_color = rows["roc_auc mean"], rows["roc_auc sd"], "black"
+    else:
+        values, error_color = rows["roc_auc external"], "red"
+        errors = [values - rows["roc_auc low"], rows["roc_auc high"] - values]
+    ax.bar(positions, values, width=BAR_WIDTH, color=color, edgecolor="black", linewidth=0.6,
+           yerr=np.asarray(errors, dtype=float), capsize=3, error_kw={"linewidth": 1, "ecolor": error_color})
+
+
+def finish_bar_chart(ax, ticks, names, ylabel, ylim, legend):
+    """Name the classifiers under their bars, label the axis and add the legend."""
+    ax.set_xticks(ticks, names, rotation=45, ha="right")
+    ax.set(ylabel=ylabel, ylim=ylim)
+    sns.despine(ax=ax)
+    handles = [plt.Rectangle((0, 0), 1, 1, color=color) for color in legend.values()]
+    ax.legend(handles, legend, loc="lower right", title="Imputer" if legend is IMPUTER_COLORS else None)
+
+
+def figure_3(retained, path):
+    """Figure 3: AUC of the retained configuration of each classifier, internal (left) and external (right)."""
+    models = retained["Model"].tolist()
+    internal, ticks, names = bar_positions(models)
+    external, external_ticks, _ = bar_positions(models, start=internal[-1] + BAR_WIDTH + BLOCK_GAP)
+    with sns.axes_style("whitegrid"), sns.plotting_context("notebook"):  # the look of the article
+        fig, ax = plt.subplots(figsize=(16, 6))
+        auc_bars(ax, internal, retained, "internal", "gold")
+        auc_bars(ax, external, retained, "external", "steelblue")
+        ax.axvline((internal[-1] + external[0]) / 2, color="black", linewidth=1.5, linestyle="--")
+        finish_bar_chart(ax, ticks + external_ticks, names * 2, "ROC AUC", (0.6, 1.08),
+                         {"Internal": "gold", "External": "steelblue"})
+        fig.tight_layout()
+        fig.savefig(path, dpi=200)
+        plt.close(fig)
+
+
+def figure_s2(main_analysis, path):
+    """Figure S2: AUC of each classifier under each imputation method, internal (top) and external (bottom)."""
+    positions, ticks, names = bar_positions(main_analysis["Model"].tolist())
+    colors = main_analysis["Imputer"].map(IMPUTER_COLORS).tolist()
+    with sns.axes_style("whitegrid"), sns.plotting_context("notebook"):  # the look of the article
+        fig, (top, bottom) = plt.subplots(2, 1, figsize=(16, 12))
+        auc_bars(top, positions, main_analysis, "internal", colors)
+        finish_bar_chart(top, ticks, names, "ROC AUC", (0.6, 1.05), IMPUTER_COLORS)
+        auc_bars(bottom, positions, main_analysis, "external", colors)
+        finish_bar_chart(bottom, ticks, names, "ROC AUC (External)", (0.5, 1.05), IMPUTER_COLORS)
+        fig.tight_layout()
+        fig.savefig(path, dpi=200)
+        plt.close(fig)
+
+
 def figure_calibration(curves, path):
     """Figure S5: one calibration curve per classifier, with its 95% band."""
     fig, axes = plt.subplots(2, 3, figsize=(12.6, 8.4))
@@ -327,6 +400,8 @@ def main():
     table_s3(results).to_csv(tables / "table_S3.csv", index=False)
     table_s4(results).to_csv(tables / "table_S4.csv", index=False)
     table(main_analysis, SHORT_NAMES).to_csv(tables / "table_S7.csv", index=False)
+    figure_3(retained, figures / "figure_3_auc.png")
+    figure_s2(main_analysis, figures / "figure_S2_auc_imputers.png")
 
     predictions = retained_predictions()
     if predictions:

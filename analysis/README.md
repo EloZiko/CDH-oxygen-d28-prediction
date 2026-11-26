@@ -21,15 +21,15 @@ uv sync --group analysis
 
 Run them in this order, from the root of the repository.
 
-| Script                     | What it does                        | Article                                |
-| -------------------------- | ----------------------------------- | -------------------------------------- |
-| `1_clean_data.py`          | Raw databases to cohort files       | Figure 1 (numbers of fetuses)          |
-| `2_table_1.py`             | Describes and compares the cohorts  | Table 1                                |
-| `3_internal_validation.py` | Nested cross-validation, Paris      | Tables 2, S2-S4, S7                    |
-| `4_external_validation.py` | Fit on Paris, test on Leuven        | Tables 2, S1-S4, S7, S8                |
-| `5_tables_figures.py`      | Tables, confidence intervals, plots | Tables 2, S1-S4, S7, S8, Figures 2, S5 |
-| `6_shap.py`                | SHAP values                         | Figures 4, S3                          |
-| `7_search_convergence.py`  | Convergence of the random search    | Figure S4                              |
+| Script                     | What it does                        | Article                                       |
+| -------------------------- | ----------------------------------- | --------------------------------------------- |
+| `1_clean_data.py`          | Raw databases to cohort files       | Figure 1 (numbers of fetuses)                 |
+| `2_table_1.py`             | Describes and compares the cohorts  | Table 1                                       |
+| `3_internal_validation.py` | Nested cross-validation, Paris      | Tables 2, S2-S4, S7                           |
+| `4_external_validation.py` | Fit on Paris, test on Leuven        | Tables 2, S1-S4, S7, S8                       |
+| `5_tables_figures.py`      | Tables, confidence intervals, plots | Tables 2, S1-S4, S7, S8, Figures 2, 3, S2, S5 |
+| `6_shap.py`                | SHAP values                         | Figures 4, S3                                 |
+| `7_search_convergence.py`  | Convergence of the random search    | Figure S4                                     |
 
 [`pipelines.py`](pipelines.py) holds what they share: the candidate
 variables, the six classifiers and their variants (imputation, SMOTE,

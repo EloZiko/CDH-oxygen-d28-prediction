@@ -110,9 +110,10 @@ original patient data. Its README lists which script gives which result.
 
 ## Data
 
-The patient data of the article are not public, for privacy reasons. For
-collaboration or research purposes, they can be requested from the
-corresponding author. The expected file format is described in
+The patient data of the article are not public, for privacy reasons. Researchers
+who would like to work with them should contact the corresponding author of the
+article, Edouard Leyne, to discuss a collaboration and its conditions. The
+expected file format is described in
 [`data/README.md`](data/README.md).
 
 ## Repository structure
@@ -144,3 +145,11 @@ the same class, score and SHAP values as CatBoost in Python.
 ## License
 
 MIT, see [`LICENSE`](LICENSE).
+
+The fetal MRI image of the web tool, [`docs/figures/mri-4ch-left-cdh.jpg`](docs/figures/mri-4ch-left-cdh.jpg),
+is not covered by the MIT license. It is Fig. 7 of Dong S-Z, Zhu M. *MR imaging
+of fetal cardiac malposition and congenital cardiovascular anomalies on the
+four-chamber view.* SpringerPlus, 2016
+([doi:10.1186/s40064-016-2833-x](https://doi.org/10.1186/s40064-016-2833-x)),
+under the [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) license;
+the web page adds the labels "Heart" and "Stomach".

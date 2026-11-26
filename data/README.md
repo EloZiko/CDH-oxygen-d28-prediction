@@ -1,8 +1,9 @@
 # Data
 
 The patient data of the article are **not** in this repository, for privacy
-reasons. For collaboration or research purposes, they can be requested from
-the corresponding author of the article.
+reasons. Researchers who would like to work with them should contact the
+corresponding author of the article, Edouard Leyne, to discuss a collaboration
+and its conditions.
 
 To use your own data, put a CSV file in this folder. Git ignores every file
 here except this one, so patient data cannot be published by mistake.
